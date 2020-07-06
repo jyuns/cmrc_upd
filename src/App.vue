@@ -1,28 +1,90 @@
+
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-app id="inspire">
+    <v-navigation-drawer
+      v-model="drawer"
+      app
+    >
+      <v-list dense>
+
+        <v-list-item link to='/'>
+          <v-list-item-action>
+            <v-icon>mdi-home</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>로그인</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item link to='/wemep'>
+          <v-list-item-action>
+            <v-img class='cmrc-icon' :src="require('./assets/wemep.png')" />
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>위메프</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item link to='/11st'>
+          <v-list-item-action>
+            <v-img class='cmrc-icon' :src="require('./assets/11st.png')" />
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>11번가</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-app-bar
+      app
+      dark
+    >
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>오픈커머스 자동 업로드</v-toolbar-title>
+    </v-app-bar>
+
+    <v-main>
+      <router-view/>
+    </v-main>
+    <v-footer
+      app
+      color='black'
+    >
+      <span class="white--text">&copy; 2020 Jyuns</span>
+    </v-footer>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
+import { mapMutations } from 'vuex'
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
+  props: {
+    source: String,
+  },
+
+  data: () => ({
+    drawer: null,
+  }),
+
+methods : {
+  ...mapMutations([
+    'INIT'
+  ])
+},
+
+mounted() {
+  this.INIT()
+}
+
 }
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style scoped>
+
+
+
 </style>
