@@ -2,8 +2,8 @@
 <div class='home-container'>
   <div>
     <div class='login-container'>
-      <login-form v-for='i in wemepAccount.length' :accountNumber='i' :accountType='"위메프"' :key='i' />
-      
+      <login-form v-for='(value, index) in wemepAccount' :accountNumber='index' :accountType='"위메프"' :key='index'
+       :accountID='value.id' :accountPW='value.pwd'/>
       <div class='add-account-btn'>
         <v-btn class="mx-2" fab dark @click='addAccount("위메프")'>
           <v-icon dark>mdi-plus</v-icon>
@@ -27,7 +27,7 @@
 
 <script>
 
-import { mapState , mapActions } from 'vuex'
+import { mapState, mapMutations, mapActions } from 'vuex'
 
 export default {
     name : 'home',
@@ -43,6 +43,10 @@ export default {
     },
 
     methods : {
+        ...mapMutations([
+          'INIT'
+        ]),
+
         ...mapActions([
             'ADD',
         ]),

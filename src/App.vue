@@ -58,28 +58,23 @@
 </template>
 
 <script>
-
 import { mapMutations } from 'vuex'
 
 export default {
-  props: {
-    source: String,
-  },
-
   data: () => ({
     drawer: null,
   }),
 
-methods : {
-  ...mapMutations([
-    'INIT'
-  ])
-},
+    created() {
+      this.INIT()
+      this.$forceUpdate()
+    },
 
-mounted() {
-  this.INIT()
-}
-
+    methods : {
+        ...mapMutations([
+          'INIT'
+        ]),
+    }
 }
 </script>
 

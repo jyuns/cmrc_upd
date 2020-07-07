@@ -13,43 +13,22 @@ export default new Vuex.Store({
 
   mutations: {
     INIT(state) {
-
-      console.log('start init localstorage')
-      console.log(typeof localStorage.getItem('wemepAccount'))
-      console.log(localStorage.getItem('elevenAccount'))
-
       let tempWemep = localStorage.getItem('wemepAccount')
       let tempEleven = localStorage.getItem('elevenAccount')
 
-      if(temp)
+      // localStorage init setting
+      if(tempWemep == null) localStorage.setItem('wemepAccount', '[]')
+      if(tempEleven == null) localStorage.setItem('elevenAccount', '[]')
 
+      tempWemep = localStorage.getItem('wemepAccount')
+      tempEleven = localStorage.getItem('elevenAccount')
 
-      if(tempWemep == null) tempWemep = ['']
-      if(tempEleven == null) tempEleven = ['']
-
+      // localStorage to JSON Type
       let tempWemepJSON = JSON.parse(tempWemep)
+      let tempElevenJSON = JSON.parse(tempEleven)
 
-      if(temp)
-
-      let tempWemep = JSON.parse(localStorage.getItem('wemepAccount'))
-      let tempEleven = JSON.parse(localStorage.getItem('elevenAccount'))
-
-      if(tempWemep != null) {
-        if(tempWemep.length != 0) {
-          state.wemepAccount = JSON.parse(tempWemep)
-        } else {
-          state.wemepAccount = ['']
-        }
-      }
-
-      if(tempEleven != null) {
-        if(tempEleven.length != 0) {
-          state.elevenAccount = JSON.parse(tempEleven)
-        } else {
-          state.elevenAccount = ['']
-        }
-      }
-
+      state.wemepAccount = tempWemepJSON
+      state.elevenAccount = tempElevenJSON
     },
   },
   actions: {
@@ -58,43 +37,49 @@ export default new Vuex.Store({
         return state.wemepAccount.push('')
       else if(payload.type == '11번가')
         return state.elevenAccount.push('')
-
     },
 
     DEL({state}, payload) {
       if(payload.type == '위메프') {
-        state.wemepAccount.splice(payload.num-1, 1)
+        state.wemepAccount.splice(payload.num, 1)
         localStorage.setItem('wemepAccount', JSON.stringify(state.wemepAccount))
       }
       else if(payload.type == '11번가') {
-        state.elevenAccount.splice(payload.num-1, 1)
+        state.elevenAccount.splice(payload.num, 1)
         localStorage.setItem('elevenAccount', JSON.stringify(state.elevenAccount))
       }
     },
 
     async LOGIN({state}, payload) {
-      
+      console.log(payload)
       let id = payload.loginId
       let pwd = payload.loginPassword
       let num = payload.loginNum
 
       if(payload.type == '위메프') {
-        let result = await axios.post('http://localhost:8082/wemep/login', {id : id, pwd : pwd})
-        
-        state.wemepAccount[num-1] = { id : id, pwd : pwd, cookie : result.data}
-        
-        let local = localStorage.getItem('wemepAccount') == null? [] : JSON.parse(localStorage.getItem('wemepAccount'))
-        local.push(state.wemepAccount[num-1])
 
-        localStorage.setItem('wemepAccount', JSON.stringify(local))
+        let result = await axios.post('http://localhost:8082/wemep/login', {id : id, pwd : pwd})
+        state.wemepAccount[num] = { id : id, pwd : pwd, cookie : result.data}
+
+        let storage = localStorage.getItem('wemepAccount')
+        let storageJSON = storage == null? [] : JSON.parse(storage)
+
+        let check = 0
+
+        for(let i = 0; i < storageJSON.length; i++) {
+          if(storageJSON[i].id == id) check++;
+        }
+
+        if(check == 0) {
+          storageJSON.push(state.wemepAccount[num])
+          localStorage.setItem('wemepAccount', JSON.stringify(storageJSON))
+        }
 
         if(result.data != false) return false
         
       } else if(payload.type == '11번가') {
         axios.post('http://localhost:8082/11st/login', )
-
       }
-    }
-
+    },
   },
 })
