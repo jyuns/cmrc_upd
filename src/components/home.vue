@@ -2,20 +2,20 @@
 <div class='home-container'>
   <div>
     <div class='login-container'>
-      <login-form v-for='(value, index) in wemepAccount' :accountNumber='index' :accountType='"위메프"' :key='index'
-       :accountID='value.id' :accountPW='value.pwd'/>
+      <login-form v-for='(value, index) in wemepAccount' :accountNumber='index' :accountType='"wemep"' :key='index+"wemep"'
+       :accountID='value.id' :accountPW='value.pw'/>
       <div class='add-account-btn'>
-        <v-btn class="mx-2" fab dark @click='addAccount("위메프")'>
+        <v-btn class="mx-2" fab dark @click='addAccount("wemep")'>
           <v-icon dark>mdi-plus</v-icon>
         </v-btn>
       </div>
     </div>
 
     <div class='login-container'>
-      <login-form v-for='i in elevenAccount.length' :accountNumber='i' :accountType='"11번가"' :key='i' />
-      
+      <login-form v-for='(value, index) in elevenAccount' :accountNumber='index' :accountType='"eleven"' :key='index+"eleven"'
+       :accountID='value.id' :accountPW='value.pw'/>
       <div class='add-account-btn'>
-        <v-btn class="mx-2" fab dark @click='addAccount("11번가")'>
+        <v-btn class="mx-2" fab dark @click='addAccount("eleven")'>
           <v-icon dark>mdi-plus</v-icon>
         </v-btn>
       </div>

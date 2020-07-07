@@ -11,13 +11,13 @@
     <v-card-text>
     <v-form>
         <v-text-field
-        v-model='tempLoginId'
+        v-model='tempLoginID'
         label="아이디"
         name="login"
         prepend-icon="mdi-account"
         type="text"
         :disabled="isDisable"
-        :value='tempLoginId'
+        :value='tempLoginID'
         ></v-text-field>
 
         <v-text-field
@@ -51,14 +51,15 @@ export default {
     },
 
     data: () => ({
-        tempLoginId : '',
+        tempLoginID : '',
         tempLoginPW : '',
 
         isDisable : false,
     }),
 
     mounted() {
-        this.tempLoginId = this.accountID
+        // 저장된 계정 초기 선언
+        this.tempLoginID = this.accountID
         this.tempLoginPW = this.accountPW
     },
 
@@ -74,9 +75,12 @@ export default {
 
         async loginAccount() {
 
+            if(!this.tempLoginID) return
+            if(!this.tempLoginPW) return
+
             let result = await this.LOGIN({
                 type : this.accountType,
-                loginId : this.tempLoginId,
+                loginId : this.tempLoginID,
                 loginPassword : this.tempLoginPW,
                 loginNum : this. accountNumber,
             })
