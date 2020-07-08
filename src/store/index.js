@@ -13,13 +13,6 @@ export default new Vuex.Store({
   state: {
     wemepAccount : [''],
     elevenAccount : [''],
-    wemepFiles : {},
-  },
-
-  getters : {
-    wemepFilesOwnById : state => (id) => {
-      return state.wemepFiles[id]
-    }
   },
 
   mutations: {
@@ -42,7 +35,6 @@ export default new Vuex.Store({
       state.elevenAccount = tempElevenJSON
     },
   },
-
   actions: {
     ADD({state}, payload) {
       if(payload.type == 'wemep')
@@ -122,9 +114,9 @@ export default new Vuex.Store({
     },
     
     async UPLOAD({state}, payload) {
-      console.log(state)
+      console.log(payload)
       let id = payload.id
-      let folder = payload.folder
+      let files = payload.files
 
       let tempAccount = state.wemepAccount
 
@@ -137,15 +129,8 @@ export default new Vuex.Store({
       console.log(cookie)
       if(cookie.length == 0) alert('로그인을 다시 진행해 주세요')
 
-      let result = await axios.post('http://localhost:8082/wemep/upload', {id:id, cookie:cookie, folder:folder})
+      let result = await axios.post('http://localhost:8082/wemep/upload', {id:id, cookie:cookie, files:files})
       console.log(result)
-    },
-
-    SET_FILES({state}, payload) {
-      let id = payload.id
-      let files = payload.files
-
-      state.wemepFiles[id] = files
-    }
+    } 
   },
 })
