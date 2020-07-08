@@ -13,6 +13,13 @@ export default new Vuex.Store({
   state: {
     wemepAccount : [''],
     elevenAccount : [''],
+    wemepFiles : {},
+  },
+
+  getters : {
+    wemepFilesOwnById : state => (id) => {
+      return state.wemepFiles[id]
+    }
   },
 
   mutations: {
@@ -35,6 +42,7 @@ export default new Vuex.Store({
       state.elevenAccount = tempElevenJSON
     },
   },
+
   actions: {
     ADD({state}, payload) {
       if(payload.type == 'wemep')
@@ -63,6 +71,9 @@ export default new Vuex.Store({
       if(payload.type == 'wemep') {
 
         let result = await axios.post('http://localhost:8082/wemep/login', {id : id, pw : pw})
+
+        if(result.data == false) return alert("ID/PW가 틀렸습니다");
+
         state.wemepAccount[num] = { id : id, pw : pw, cookie : result.data}
 
         let storage = localStorage.getItem('wemepAccount')
@@ -79,13 +90,15 @@ export default new Vuex.Store({
           localStorage.setItem('wemepAccount', JSON.stringify(storageJSON))
         }
 
-        if(result.data != false) return false
+        if(result.data != false) { alert("로그인 성공하였습니다"); return false }
         
       } else if(payload.type == 'eleven') {
         let encryptedID = JSEncrypt.default.prototype.encrypt(id)
         let encryptedPW = JSEncrypt.default.prototype.encrypt(pw)
 
         let result = await axios.post('http://localhost:8082/11st/login', {encryptedID : encryptedID, encryptedPW : encryptedPW})
+        console.log(result.data)
+        if(result.data == false) return alert("ID/PW가 틀렸습니다");
 
         state.elevenAccount[num] = { id : id, pw : pw, cookie : result.data}
 
@@ -103,9 +116,36 @@ export default new Vuex.Store({
           localStorage.setItem('elevenAccount', JSON.stringify(storageJSON))
         }
 
-        if(result.data != false) return false
+        if(result.data != false) { alert("로그인 성공하였습니다"); return false }
 
       }
     },
+    
+    async UPLOAD({state}, payload) {
+      console.log(state)
+      let id = payload.id
+      let folder = payload.folder
+
+      let tempAccount = state.wemepAccount
+
+      let cookie = ''
+      
+      tempAccount.forEach( (val) => {
+        if(val.id == id) return cookie=val.cookie
+      })
+
+      console.log(cookie)
+      if(cookie.length == 0) alert('로그인을 다시 진행해 주세요')
+
+      let result = await axios.post('http://localhost:8082/wemep/upload', {id:id, cookie:cookie, folder:folder})
+      console.log(result)
+    },
+
+    SET_FILES({state}, payload) {
+      let id = payload.id
+      let files = payload.files
+
+      state.wemepFiles[id] = files
+    }
   },
 })

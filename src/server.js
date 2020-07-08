@@ -67,9 +67,97 @@ nodeApp.post('/wemep/login', async (req, res) => {
         let loginSession = loginReq.headers['set-cookie'].join(';')
         res.end(loginSession)
 
-    } catch {
+    } catch(err) {
+        console.log(err)
         res.end('false')
     }
+})
+
+const fs = require('fs')
+const path = require('path');
+
+nodeApp.post('/wemep/upload', async(req, res) => {
+
+    let folder = req.body.folder
+    
+    let id = req.body.id
+    let cookie = req.body.cookie
+
+    axios.defaults.headers.Cookie = cookie
+
+/**
+ *     for(let i = 0; i < folder.length; i++) {
+
+        let directoryPath = path.join(__dirname, folder[i])
+
+        fs.readdir(directoryPath, (err, files) => {
+            if(err) {
+                return console.log('error', err)
+            }
+
+            console.log('-------------', directoryPath,'-------------')
+
+            files.forEach((file) => {
+                console.log(file)
+            })
+        })
+    }
+ */
+
+
+/**    for(let i = 0; i < filesKey.length; i++) {
+        for(let j = 0; j < files[filesKey].length; j++) {
+
+            let type = files[filesKey][j] // Type Check
+
+            if(type == 'image') {
+                const image = fs.createReadStream(files[filesKey][j])
+
+                const imageFormData = new FormData()
+
+                imageFormData.append('fileFieldName', 'fileArr')
+                imageFormData.append('fileName', 'test.jpg') // req.body
+                imageFormData.append('imgKey', 'MultipleTemp')
+                imageFormData.append('baseKeyCd', 'kokorea24n') // req.body
+                imageFormData.append('mode', 'upload')
+                imageFormData.append('fileArr', image)
+
+                let uploadImageReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadImageAsync.json',
+                                                imageFormData,
+                                                {
+                                                    headers : {
+                                                        ...imageFormData.getHeaders()
+                                                    },
+                                                },
+                                            )
+                console.log(uploadImageReq)
+
+            } else if(type = 'excel') {
+                const excel = fs.createReadStream(files[filesKey][j])
+
+                uploadExcel.append('imgKey', 'ProductExcelFile')
+                uploadExcel.append('mode', 'upload')
+                uploadExcel.append('baseKeyCd', 'kokorea24n') // req.body
+                uploadExcel.append('fileName', 'uploadNaverFile')
+                uploadExcel.append('uploadNaverFile', excel)
+
+                const excelFormData = new FormData()
+
+            }
+
+            
+            
+            axios.post('')
+        }
+    } */
+
+
+    // 쿠키 초기화
+    axios.defaults.headers.Cookie = ''
+
+    res.send('')
+
+
 })
 
 nodeApp.post('/11st/login', async (req, res) => {
@@ -88,10 +176,15 @@ nodeApp.post('/11st/login', async (req, res) => {
 
     try {
         let loginReq = await axios.post('https://login.11st.co.kr/auth/front/selleroffice/logincheck.tmall', params)
-        let loginSession = loginReq.headers['set-cookie'].join(';')
+        let loginHeader = loginReq.headers['set-cookie']
 
+        if(loginHeader.length < 10) return res.send('false')
+
+        let loginSession = loginHeader.join(';')
         res.send(loginSession)
-    } catch {
+
+    } catch(err) {
+        console.log(err)
         res.send('false')
     }
 })

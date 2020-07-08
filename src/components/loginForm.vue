@@ -35,6 +35,9 @@
     <div class='login-wrapper'>
         <v-btn class='login-btn' color='primary' @click="loginAccount()">로그인</v-btn>
     </div>
+    <div>
+        <wemep-upload  :wemepAccountID='tempLoginID' />
+    </div>
 </v-card>
 </template>
 
@@ -50,6 +53,10 @@ export default {
         accountPW : String,
     },
 
+    components : {
+        wemepUpload : require('./wemepUpload').default,
+    },
+
     data: () => ({
         tempLoginID : '',
         tempLoginPW : '',
@@ -57,7 +64,7 @@ export default {
         isDisable : false,
     }),
 
-    mounted() {
+    created() {
         // 저장된 계정 초기 선언
         this.tempLoginID = this.accountID
         this.tempLoginPW = this.accountPW
@@ -75,8 +82,8 @@ export default {
 
         async loginAccount() {
 
-            if(!this.tempLoginID) return
-            if(!this.tempLoginPW) return
+            if(!this.tempLoginID) return alert("ID/PW를 입력해주세요");
+            if(!this.tempLoginPW) return alert("ID/PW를 입력해주세요");
 
             let result = await this.LOGIN({
                 type : this.accountType,
@@ -85,8 +92,7 @@ export default {
                 loginNum : this. accountNumber,
             })
 
-            if(result == false) this.isDisable = true
-            
+            if(result == false) this.isDisable = true 
             this.$forceUpdate()
 
         }

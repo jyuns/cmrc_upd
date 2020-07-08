@@ -9,15 +9,6 @@
 
         <v-list-item link to='/'>
           <v-list-item-action>
-            <v-icon>mdi-home</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>로그인</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-
-        <v-list-item link to='/wemep'>
-          <v-list-item-action>
             <v-img class='cmrc-icon' :src="require('./assets/wemep.png')" />
           </v-list-item-action>
           <v-list-item-content>
