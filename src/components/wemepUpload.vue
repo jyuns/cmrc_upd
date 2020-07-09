@@ -1,5 +1,5 @@
 <template>
-<div>
+<div @click='test()'>
   <div class='drop-wrapper' @dragover.prevent @drop.stop.prevent="dropFile">
     <div class='drop-zone' v-if='!Object.keys(files).length'>
       <img :src='require("../assets/upload.svg")' style='width:42px; margin-bottom:8px;' />
@@ -51,6 +51,10 @@ export default {
     ...mapActions([
       'UPLOAD'
     ]),
+
+    test() {
+      console.log(this.files)
+    },
 
     upload() {
         this.UPLOAD({

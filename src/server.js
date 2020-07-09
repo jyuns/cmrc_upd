@@ -76,7 +76,7 @@ nodeApp.post('/wemep/login', async (req, res) => {
 const fs = require('fs')
 
 nodeApp.post('/wemep/upload', async(req, res) => {
-
+    
     let files = req.body.files
     let id = req.body.id
     let cookie = req.body.cookie
@@ -103,74 +103,87 @@ nodeApp.post('/wemep/upload', async(req, res) => {
 
             if(checkImage > 0) {
                 
-                const image = fs.createReadStream(files[filesKey[i]][j])
+                try {
+                    const image = fs.createReadStream(files[filesKey[i]][j])
             
-                const imageFormData = new FormData()
-
-                imageFormData.append('fileFieldName', 'fileArr')
-                imageFormData.append('fileName', files[filesKey[i]][j].split('/').pop())
-                imageFormData.append('imgKey', 'MultipleTemp')
-                imageFormData.append('baseKeyCd', id)
-                imageFormData.append('mode', 'upload')
-                imageFormData.append('fileArr', image)
-
-                let uploadImageReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadImageAsync.json',
-                                                imageFormData,
-                                                {
-                                                    headers : {
-                                                        ...imageFormData.getHeaders()
+                    const imageFormData = new FormData()
+    
+                    imageFormData.append('fileFieldName', 'fileArr')
+                    imageFormData.append('fileName', files[filesKey[i]][j].split('/').pop())
+                    imageFormData.append('imgKey', 'MultipleTemp')
+                    imageFormData.append('baseKeyCd', id)
+                    imageFormData.append('mode', 'upload')
+                    imageFormData.append('fileArr', image)
+    
+                    let uploadImageReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadImageAsync.json',
+                                                    imageFormData,
+                                                    {
+                                                        headers : {
+                                                            ...imageFormData.getHeaders()
+                                                        },
                                                     },
-                                                },
-                                            )
-                console.log(uploadImageReq)
+                                                )
+                    
+                    
+                    console.log(uploadImageReq.data, j)
+
+                } catch(err) {
+                    console.log('image', err)
+                    res.status(400).end('업로드 실패')
+                }
 
             } else if(checkExcel > 0) {
 
-                const excel = fs.createReadStream(files[filesKey[i]][j])
+                try {
+                    const excel = fs.createReadStream(files[filesKey[i]][j])
 
-                const excelFormData = new FormData()
-
-                excelFormData.append('imgKey', 'ProductExcelFile')
-                excelFormData.append('mode', 'upload')
-                excelFormData.append('baseKeyCd', id)
-                excelFormData.append('fileName', 'uploadNaverFile')
-                excelFormData.append('uploadNaverFile', excel)
-
-                let uploadExcelReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadFile.json',
-                                                excelFormData,
-                                                {
-                                                    headers : {
-                                                        ...excelFormData.getHeaders()
-                                                    },
-                                                },
-                                            )
-                
-                let excelInfo = uploadExcelReq.data
-                let excelNm = excelInfo.uploadNaverFile[0].original_file
-                let excelUrl = excelInfo.uploadNaverFile[0].upload_file.origin_url
-
-                const registerFormData = new FormData()
-
-                registerFormData.append('excelNm', excelNm)
-                registerFormData.append('excelUrl', excelUrl)
-
-                let registerExcelRequest = await axios.post('https://wpartner.wemakeprice.com/product/excel/naver/addProdExcelFile.json',
-                                                    registerFormData,
+                    const excelFormData = new FormData()
+    
+                    excelFormData.append('imgKey', 'ProductExcelFile')
+                    excelFormData.append('mode', 'upload')
+                    excelFormData.append('baseKeyCd', id)
+                    excelFormData.append('fileName', 'uploadNaverFile')
+                    excelFormData.append('uploadNaverFile', excel)
+    
+                    let uploadExcelReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadFile.json',
+                                                    excelFormData,
                                                     {
                                                         headers : {
-                                                            ...registerFormData.getHeaders()
-                                                        }
-                                                    }
+                                                            ...excelFormData.getHeaders()
+                                                        },
+                                                    },
                                                 )
-                console.log(registerExcelRequest)
+                    
+                    let excelInfo = uploadExcelReq.data
+
+
+                    let excelNm = excelInfo.uploadNaverFile[0].original_file
+                    let excelUrl = excelInfo.uploadNaverFile[0].upload_file.url                          
+                    
+                    const registerFormData = new FormData()
+    
+                    registerFormData.append('excelNm', excelNm)
+                    registerFormData.append('excelUrl', excelUrl)
+    
+                    let registerExcelReq = await axios.post('https://wpartner.wemakeprice.com/product/excel/naver/addProdExcelFile.json',
+                                                        registerFormData,
+                                                        {
+                                                            headers : {
+                                                                ...registerFormData.getHeaders()
+                                                            }
+                                                        }
+                                                    )
+                    
+
+                } catch(err) {
+                    console.log('excel', err.response.data.errors)
+                    res.status(400).end('업로드 실패')
+                }
             }
         }
     }
 
-    axios.defaults.headers.Cookie = ''
-
-    res.send('')
-
+    res.status(200).end('업로드 성공')
 
 })
 
@@ -192,15 +205,70 @@ nodeApp.post('/11st/login', async (req, res) => {
         let loginReq = await axios.post('https://login.11st.co.kr/auth/front/selleroffice/logincheck.tmall', params)
         let loginHeader = loginReq.headers['set-cookie']
 
-        if(loginHeader.length < 10) return res.send('false')
+        if(loginHeader.length < 10) return res.end('false')
 
         let loginSession = loginHeader.join(';')
-        res.send(loginSession)
+        axios.defaults.headers.Cookie = loginSession
+
+        let result = await axios.get('http://soffice.11st.co.kr/product/ProductRegAjax.tmall?method=getSendCloseTemplateList')
+        
+        let templateCode = result.data.split('')
+
+        templateCode.shift()
+        templateCode.pop()
+        
+        let templateCodeJSON = JSON.parse(templateCode.join(''))
+        let getTemplateCode = templateCodeJSON['PRODUCT_TEMPLATE']['TMPLT_INFO']['prdInfoTmpltNo']
+
+        res.json({cookie : loginSession, tmpCode : getTemplateCode})
 
     } catch(err) {
         console.log(err)
-        res.send('false')
+        res.end('false')
     }
+})
+
+const XLSX = require('xlsx')
+
+nodeApp.post('/11st/uploadCheck', async (req, res) => {
+
+    let path = req.body.path
+
+    console.log(XLSX.readFile(path))
+
+    res.json({
+        path : '',
+        tempCode : ''
+    })
+})
+
+nodeApp.post('/11st/upload', async (req, res) => {
+    //let files = req.body.files
+    let cookie = req.body.cookie
+
+    axios.defaults.headers.Cookie = cookie
+    
+    try {
+        const uploadForm = new FormData()
+
+        uploadForm.append('imageFile', )
+        uploadForm.append('excelFile', )
+    
+        let uploadReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadFile.json',
+                                            uploadForm,
+                                                {
+                                                    headers : {
+                                                        ...uploadForm.getHeaders()
+                                                    },
+                                                },
+                                              )    
+    
+        console.log(uploadReq)
+    } catch {
+        res.status(400).end('업로드 실패')
+    }
+
+    res.end('')
 })
 
 nodeApp.listen(8082, () => {

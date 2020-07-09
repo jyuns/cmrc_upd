@@ -89,11 +89,11 @@ export default new Vuex.Store({
         let encryptedPW = JSEncrypt.default.prototype.encrypt(pw)
 
         let result = await axios.post('http://localhost:8082/11st/login', {encryptedID : encryptedID, encryptedPW : encryptedPW})
-        console.log(result.data)
+        
         if(result.data == false) return alert("ID/PW가 틀렸습니다");
 
-        state.elevenAccount[num] = { id : id, pw : pw, cookie : result.data}
-
+        state.elevenAccount[num] = { id : id, pw : pw, cookie : result.data.cookie, tmpCode : result.data.tmpCode}
+        
         let storage = localStorage.getItem('elevenAccount')
         let storageJSON = storage == null? [] : JSON.parse(storage)
 
@@ -109,12 +109,11 @@ export default new Vuex.Store({
         }
 
         if(result.data != false) { alert("로그인 성공하였습니다"); return false }
-
       }
     },
     
     async UPLOAD({state}, payload) {
-      console.log(payload)
+      console.log(state)
       let id = payload.id
       let files = payload.files
 
@@ -126,11 +125,28 @@ export default new Vuex.Store({
         if(val.id == id) return cookie=val.cookie
       })
 
-      console.log(cookie)
       if(cookie.length == 0) alert('로그인을 다시 진행해 주세요')
 
-      let result = await axios.post('http://localhost:8082/wemep/upload', {id:id, cookie:cookie, files:files})
+      try {
+
+        let result = await axios.post('http://localhost:8082/wemep/upload', {id:id, cookie:cookie, files:files})
+        console.log(result)
+        return alert('성공적으로 업로드 되었습니다.')
+        
+      } catch(err) {
+
+        if(err) {
+          return alert('업로드 실패하였습니다.')
+        }
+
+      }
+    },
+
+    async CHECK_TMP_CODE({state}, payload) {
+      console.log(state)
+      let path = payload.path
+      let result = await axios.post('http://localhost:8082/11st/uploadCheck', {path : path})
       console.log(result)
-    } 
+    }
   },
 })

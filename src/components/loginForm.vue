@@ -36,7 +36,8 @@
         <v-btn class='login-btn' color='primary' @click="loginAccount()">로그인</v-btn>
     </div>
     <div>
-        <wemep-upload  :wemepAccountID='tempLoginID' />
+        <wemep-upload v-if='accountType=="wemep"' :wemepAccountID='tempLoginID' />
+
     </div>
 </v-card>
 </template>

@@ -5,8 +5,6 @@
       <login-form v-for='(value, index) in wemepAccount' :accountNumber='index' :accountType='"wemep"' :key='index+"wemep"'
        :accountID='value.id' :accountPW='value.pw'/>
 
-
-       
       <div class='add-account-btn'>
         <v-btn class="mx-2" fab dark @click='addAccount("wemep")'>
           <v-icon dark>mdi-plus</v-icon>

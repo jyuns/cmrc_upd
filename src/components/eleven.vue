@@ -12,6 +12,8 @@
       </div>
     </div>
 
+    <eleven-upload/>
+
   </div>
 </div>
 </template>
@@ -23,7 +25,8 @@ export default {
     name : 'eleven',
 
     components : {
-      loginForm : require('./loginForm.vue').default
+      loginForm : require('./loginForm.vue').default,
+      elevenUpload : require('./elevenUpload.vue').default
     },
 
     computed : {
