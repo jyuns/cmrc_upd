@@ -9,7 +9,6 @@ const notFound = require('../components/notFound')
 
 
 const router = new VueRouter({
-    
     mode : 'history',
 
     routes : [
@@ -17,7 +16,6 @@ const router = new VueRouter({
         { path : '/11st', component : eleven.default}, 
         { path : '*', component : notFound.default},
     ]
-
 })
 
 export default router

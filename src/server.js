@@ -38,6 +38,7 @@ nodeApp.use((req, res, next) => {
     next()
 })
 
+
 // 위메프 로그인 암호화
 const sha1 = require('js-sha1')
 
@@ -85,66 +86,62 @@ nodeApp.post('/wemep/upload', async(req, res) => {
 
     let filesKey = Object.keys(files)
     
+    const imageFormData = new FormData()
+
+    imageFormData.set('fileFieldName', 'fileArr')
+    imageFormData.set('imgKey', 'MultipleTemp')
+    imageFormData.set('baseKeyCd', id)
+    imageFormData.set('mode', 'upload')
+    
+    
+    const excelFormData = new FormData()
+
+    excelFormData.set('imgKey', 'ProductExcelFile')
+    excelFormData.set('mode', 'upload')
+    excelFormData.set('baseKeyCd', id)
+    excelFormData.set('fileName', 'uploadNaverFile')
+
+    const registerFormData = new FormData()
+
     for(let i = 0; i < filesKey.length; i++) {
-        for(let j = 0; j < files[filesKey[i]].length; j++) {
+        if(files[filesKey[i]]['image']) {
+            for(let j = 0; j < files[filesKey[i]]['image'].length; j++) {
 
-            let tempFileType = files[filesKey[i]][j].split('.').pop()
-            let checkImage = 0
-            let checkExcel = 0
-            
-            if(tempFileType == 'jpg') checkImage++
-            if(tempFileType == 'png') checkImage++
-            if(tempFileType == 'jpeg') checkImage++
-            if(tempFileType == 'gif') checkImage++
-            if(tempFileType == 'bmp') checkImage++
+                let tempFilePath = files[filesKey[i]]['image'][j]
 
-            if(tempFileType == 'xlsx') checkExcel++
-            if(tempFileType == 'xls') checkExcel++
+                const image = fs.createReadStream(tempFilePath)
 
-            if(checkImage > 0) {
-                
+                imageFormData.set('fileName', tempFilePath.split('/').pop())
+                imageFormData.set('fileArr', image)
+
                 try {
-                    const image = fs.createReadStream(files[filesKey[i]][j])
-            
-                    const imageFormData = new FormData()
-    
-                    imageFormData.append('fileFieldName', 'fileArr')
-                    imageFormData.append('fileName', files[filesKey[i]][j].split('/').pop())
-                    imageFormData.append('imgKey', 'MultipleTemp')
-                    imageFormData.append('baseKeyCd', id)
-                    imageFormData.append('mode', 'upload')
-                    imageFormData.append('fileArr', image)
-    
-                    let uploadImageReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadImageAsync.json',
-                                                    imageFormData,
-                                                    {
-                                                        headers : {
-                                                            ...imageFormData.getHeaders()
-                                                        },
-                                                    },
-                                                )
-                    
-                    
-                    console.log(uploadImageReq.data, j)
-
+                    axios.post('https://wpartner.wemakeprice.com/common/uploadImageAsync.json',
+                                    imageFormData,
+                                    {
+                                        headers : {
+                                            ...imageFormData.getHeaders()
+                                        },
+                                    },
+                                )
                 } catch(err) {
-                    console.log('image', err)
-                    res.status(400).end('업로드 실패')
+                    console.log('image', err.response.data.errors)
+                    res.status(400).end('이미지 업로드 실패')
                 }
+            }
+        }
 
-            } else if(checkExcel > 0) {
+
+        if(files[filesKey[i]]['excel']) {
+            for(let j = 0; j < files[filesKey[i]]['excel'].length; j++) {
+
+                let tempFilePath = files[filesKey[i]]['excel'][j]
+
+                const excel = fs.createReadStream(tempFilePath)
+
+                excelFormData.set('uploadNaverFile', excel)
 
                 try {
-                    const excel = fs.createReadStream(files[filesKey[i]][j])
-
-                    const excelFormData = new FormData()
-    
-                    excelFormData.append('imgKey', 'ProductExcelFile')
-                    excelFormData.append('mode', 'upload')
-                    excelFormData.append('baseKeyCd', id)
-                    excelFormData.append('fileName', 'uploadNaverFile')
-                    excelFormData.append('uploadNaverFile', excel)
-    
+                    // create excel url
                     let uploadExcelReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadFile.json',
                                                     excelFormData,
                                                     {
@@ -154,30 +151,26 @@ nodeApp.post('/wemep/upload', async(req, res) => {
                                                     },
                                                 )
                     
+                    // upload excel url
                     let excelInfo = uploadExcelReq.data
-
-
                     let excelNm = excelInfo.uploadNaverFile[0].original_file
-                    let excelUrl = excelInfo.uploadNaverFile[0].upload_file.url                          
-                    
-                    const registerFormData = new FormData()
-    
-                    registerFormData.append('excelNm', excelNm)
-                    registerFormData.append('excelUrl', excelUrl)
-    
-                    let registerExcelReq = await axios.post('https://wpartner.wemakeprice.com/product/excel/naver/addProdExcelFile.json',
-                                                        registerFormData,
-                                                        {
-                                                            headers : {
-                                                                ...registerFormData.getHeaders()
-                                                            }
-                                                        }
-                                                    )
-                    
+                    let excelUrl = excelInfo.uploadNaverFile[0].upload_file.url
 
-                } catch(err) {
+                    registerFormData.set('excelNm', excelNm)
+                    registerFormData.set('excelUrl', excelUrl)
+
+                    axios.post('https://wpartner.wemakeprice.com/product/excel/naver/addProdExcelFile.json',
+                                    registerFormData,
+                                    {
+                                        headers : {
+                                            ...registerFormData.getHeaders()
+                                        }
+                                    }
+                                )
+
+                } catch (err) {
                     console.log('excel', err.response.data.errors)
-                    res.status(400).end('업로드 실패')
+                    res.status(400).end('엑셀 업로드 실패')
                 }
             }
         }
@@ -271,6 +264,6 @@ nodeApp.post('/11st/upload', async (req, res) => {
     res.end('')
 })
 
-nodeApp.listen(8082, () => {
-    console.log('node listen 8082 port')
+nodeApp.listen(8083, () => {
+    console.log('node listen 8083 port')
 })

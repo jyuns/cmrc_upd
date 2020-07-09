@@ -17,6 +17,7 @@ export default new Vuex.Store({
 
   mutations: {
     INIT(state) {
+
       let tempWemep = localStorage.getItem('wemepAccount')
       let tempEleven = localStorage.getItem('elevenAccount')
 
@@ -62,7 +63,7 @@ export default new Vuex.Store({
 
       if(payload.type == 'wemep') {
 
-        let result = await axios.post('http://localhost:8082/wemep/login', {id : id, pw : pw})
+        let result = await axios.post('http://localhost:8083/wemep/login', {id : id, pw : pw})
 
         if(result.data == false) return alert("ID/PW가 틀렸습니다");
 
@@ -88,7 +89,7 @@ export default new Vuex.Store({
         let encryptedID = JSEncrypt.default.prototype.encrypt(id)
         let encryptedPW = JSEncrypt.default.prototype.encrypt(pw)
 
-        let result = await axios.post('http://localhost:8082/11st/login', {encryptedID : encryptedID, encryptedPW : encryptedPW})
+        let result = await axios.post('http://localhost:8083/11st/login', {encryptedID : encryptedID, encryptedPW : encryptedPW})
         
         if(result.data == false) return alert("ID/PW가 틀렸습니다");
 
@@ -113,7 +114,7 @@ export default new Vuex.Store({
     },
     
     async UPLOAD({state}, payload) {
-      console.log(state)
+
       let id = payload.id
       let files = payload.files
 
@@ -128,8 +129,7 @@ export default new Vuex.Store({
       if(cookie.length == 0) alert('로그인을 다시 진행해 주세요')
 
       try {
-
-        let result = await axios.post('http://localhost:8082/wemep/upload', {id:id, cookie:cookie, files:files})
+        let result = await axios.post('http://localhost:8083/wemep/upload', {id:id, cookie:cookie, files:files})
         console.log(result)
         return alert('성공적으로 업로드 되었습니다.')
         
@@ -145,7 +145,7 @@ export default new Vuex.Store({
     async CHECK_TMP_CODE({state}, payload) {
       console.log(state)
       let path = payload.path
-      let result = await axios.post('http://localhost:8082/11st/uploadCheck', {path : path})
+      let result = await axios.post('http://localhost:8083/11st/uploadCheck', {path : path})
       console.log(result)
     }
   },

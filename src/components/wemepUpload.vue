@@ -97,19 +97,26 @@ export default {
           let tempFileType = file.path.split('.').pop()
           tempFileType = tempFileType.toLowerCase()
 
-          let checkType = 0
+          let checkImageType = 0
+          let checkExcelType = 0
 
-          if(tempFileType == 'jpg') checkType++
-          if(tempFileType == 'png') checkType++
-          if(tempFileType == 'jpeg') checkType++
-          if(tempFileType == 'gif') checkType++
-          if(tempFileType == 'bmp') checkType++
-          if(tempFileType == 'xlsx') checkType++
-          if(tempFileType == 'xls') checkType++
+          if(tempFileType == 'jpg') checkImageType++
+          if(tempFileType == 'png') checkImageType++
+          if(tempFileType == 'jpeg') checkImageType++
+          if(tempFileType == 'gif') checkImageType++
+          if(tempFileType == 'bmp') checkImageType++
+          if(tempFileType == 'xlsx') checkExcelType++
+          if(tempFileType == 'xls') checkExcelType++
 
-          if(checkType > 0) {
-            if(!self.files[tempFilePath]) self.files[tempFilePath] = []
-            if(self.files[tempFilePath].indexOf(file.path) == -1) return self.files[tempFilePath].push(file.path)
+          if(checkImageType) {
+            if(!self.files[tempFilePath]) self.files[tempFilePath] = {}
+            if(!self.files[tempFilePath]['image']) self.files[tempFilePath]['image'] = []
+            if(self.files[tempFilePath]['image'].indexOf(file.path) == -1) return self.files[tempFilePath]['image'].push(file.path)
+
+          } else if(checkExcelType) {
+            if(!self.files[tempFilePath]) self.files[tempFilePath] = {}
+            if(!self.files[tempFilePath]['excel']) self.files[tempFilePath]['excel'] = []
+            if(self.files[tempFilePath]['excel'].indexOf(file.path) == -1) return self.files[tempFilePath]['excel'].push(file.path)
           }
         }) 
       }
