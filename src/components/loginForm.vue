@@ -37,7 +37,6 @@
     </div>
     <div>
         <wemep-upload v-if='accountType=="wemep"' :wemepAccountID='tempLoginID' />
-
     </div>
 </v-card>
 </template>

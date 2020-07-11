@@ -58,8 +58,8 @@ export default {
 
     upload() {
         this.UPLOAD({
-          id : this.elevenAccountID,
           files : this.files,
+          type : 'eleven',
         })
     },
 
@@ -88,31 +88,18 @@ export default {
       let self = this
 
       if(item.isFile) {
-        item.file( (file) => {
+        item.file( async (file) => {
           let tempFilePath = file.path.split('/')
           tempFilePath.pop()
           tempFilePath = tempFilePath.join('/') + '/'
 
-
           let tempFileType = file.path.split('.').pop()
           tempFileType = tempFileType.toLowerCase()
 
-          let checkType = 0
-
-          if(tempFileType == 'jpg') checkType++
-          if(tempFileType == 'png') checkType++
-          if(tempFileType == 'jpeg') checkType++
-          if(tempFileType == 'gif') checkType++
-          if(tempFileType == 'bmp') checkType++
-          if(tempFileType == 'xlsx') checkType++
-          if(tempFileType == 'xls') checkType++
-
-          if(checkType > 0) {
+          if(tempFileType == 'xls') {
             if(!self.files[tempFilePath]) self.files[tempFilePath] = []
-
-            this.CHECK_TMP_CODE({path : file.path})
-
-            if(self.files[tempFilePath].indexOf(file.path) == -1) return self.files[tempFilePath].push(file.path)
+            let modifiedFilePath = await this.CHECK_TMP_CODE({path : file.path})
+            if(self.files[tempFilePath].indexOf(file.path) == -1) return self.files[tempFilePath].push(modifiedFilePath)
           }
         }) 
       }

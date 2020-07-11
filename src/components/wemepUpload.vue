@@ -60,6 +60,7 @@ export default {
         this.UPLOAD({
           id : this.wemepAccountID,
           files : this.files,
+          type : 'wemep',
         })
     },
 
@@ -89,10 +90,10 @@ export default {
 
       if(item.isFile) {
         item.file( (file) => {
+          
           let tempFilePath = file.path.split('/')
           tempFilePath.pop()
           tempFilePath = tempFilePath.join('/') + '/'
-
 
           let tempFileType = file.path.split('.').pop()
           tempFileType = tempFileType.toLowerCase()

@@ -115,38 +115,58 @@ export default new Vuex.Store({
     
     async UPLOAD({state}, payload) {
 
-      let id = payload.id
       let files = payload.files
+      let type = payload.type
 
-      let tempAccount = state.wemepAccount
+      if(type == 'wemep') {
+        let id = payload.id
+        let tempAccount = state.wemepAccount
 
-      let cookie = ''
-      
-      tempAccount.forEach( (val) => {
-        if(val.id == id) return cookie=val.cookie
-      })
-
-      if(cookie.length == 0) alert('로그인을 다시 진행해 주세요')
-
-      try {
-        let result = await axios.post('http://localhost:8083/wemep/upload', {id:id, cookie:cookie, files:files})
-        console.log(result)
-        return alert('성공적으로 업로드 되었습니다.')
+        let cookie = ''
         
-      } catch(err) {
+        tempAccount.forEach( (val) => {
+          if(val.id == id) return cookie=val.cookie
+        })
+  
+        if(cookie.length == 0) return alert('로그인을 다시 진행해 주세요')
+  
+        try {
+          
+          let result = await axios.post('http://localhost:8083/wemep/upload', {id:id, cookie:cookie, files:files})
 
-        if(err) {
-          return alert('업로드 실패하였습니다.')
+          return alert('성공적으로 업로드 되었습니다\n'
+           + '이미지 성공 : ' + result.data.imageSuccess + ' / 이미지 실패 : ' + result.data.imageError
+           + '\n 엑셀 성공 : ' + result.data.excelSuccess + ' / 엑셀 실패 : ' + result.data.excelError)
+          
+        } catch (err) {
+          
+          return alert(err)
+
+        }} else if (type == 'eleven') {
+            
+            let tempAccount = state.elevenAccount
+            
+            try {
+              
+              let result = await axios.post('http://localhost:8083/11st/upload', {id:tempAccount, files:files})
+              return alert('성공적으로 업로드 되었습니다\n' + '성공 : ' + result.data.success + ' / 실패 : ' + result.data.error)
+
+            } catch (err) {
+              
+              return alert(err)
+
+            }
+
         }
-
-      }
-    },
+      },
 
     async CHECK_TMP_CODE({state}, payload) {
       console.log(state)
+      
       let path = payload.path
       let result = await axios.post('http://localhost:8083/11st/uploadCheck', {path : path})
-      console.log(result)
+      
+      return result.data
     }
   },
 })
