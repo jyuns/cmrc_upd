@@ -12,13 +12,13 @@ const axios = require('axios')
 const http = require('http')
 const https = require('https')
 
+const iconv = require('iconv-lite')
+
 const axiosInstance = axios.create({
     headers:{
         'User-Agent': 'Mozilla/5.0'},
-    timeout : 10000,
     maxContentLength: 100000000,
     maxBodyLength: 1000000000,
-
     httpAgent : new http.Agent({keepAlive:true}),
     httpsAgent : new https.Agent({keepAlive:true}),
 })
@@ -134,15 +134,7 @@ nodeApp.post('/wemep/upload', async(req, res) => {
 
     axiosInstance.defaults.headers.Cookie = cookie
 
-    let filesKey = Object.keys(files)
-    
-    const imageFormData = new FormData()
-
-    imageFormData.append('fileFieldName', 'fileArr')
-    imageFormData.append('imgKey', 'MultipleTemp')
-    imageFormData.append('baseKeyCd', id)
-    imageFormData.append('mode', 'upload')
-    
+    let filesKey = Object.keys(files)    
 
     for(let i = 0; i < filesKey.length; i++) {
         if(files[filesKey[i]]['image']) {
@@ -161,6 +153,13 @@ nodeApp.post('/wemep/upload', async(req, res) => {
                 })
 
                 if(fsError) { imageError++; continue }
+
+                const imageFormData = new FormData()
+
+                imageFormData.append('fileFieldName', 'fileArr')
+                imageFormData.append('imgKey', 'MultipleTemp')
+                imageFormData.append('baseKeyCd', id)
+                imageFormData.append('mode', 'upload')
 
                 imageFormData.append('fileName', tempImagePath.split('/').pop())
                 imageFormData.append('fileArr', image)
@@ -329,8 +328,6 @@ nodeApp.post('/11st/upload', async (req, res) => {
     let files = req.body.files
     let filesKey = Object.keys(files)
 
-    const uploadForm = new FormData()
-
     startUpload('11번가')
 
     for(let i = 0; i < filesKey.length; i++) {
@@ -378,7 +375,7 @@ nodeApp.post('/11st/upload', async (req, res) => {
 
                 let fsError = false
 
-                const zip = fs.createReadStream(tempZipFilePath.join('/') + '/' + tempZipFileName).on('error', )
+                const zip = fs.createReadStream(tempZipFilePath.join('/') + '/' + tempZipFileName)
                 const excel = fs.createReadStream(tempFilePath)
 
                 zip.on('error', () => {
@@ -395,20 +392,24 @@ nodeApp.post('/11st/upload', async (req, res) => {
 
                 if(fsError) { error++; continue }
 
-
+                const uploadForm = new FormData()
+                
                 uploadForm.append('imageFile', zip)
                 uploadForm.append('excelFile', excel)
-
+                console.log(uploadForm.getHeaders()['content-type'] + '; charset=EUC-KR')
                 let result = await axiosInstance.post('http://soffice.11st.co.kr/product/BulkProductReg.tmall?method=uploadBulkProduct',
                             uploadForm,
                                 {
                                     headers : {
-                                        ...uploadForm.getHeaders()
+                                        'Content-Type' : uploadForm.getHeaders()['content-type'] + '; charset=euc-kr'
                                     },
+                                    responseType: 'arraybuffer',
+                                    responseEncoding: 'binary'
                                 },
                             )
 
-                console.log(result)
+                let utf8Text = iconv.decode(result.data, 'euc-kr')
+                console.log(utf8Text)
 
                 uploadSuccess(tempFilePath); success++
                         
