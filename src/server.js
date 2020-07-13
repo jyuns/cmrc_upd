@@ -9,7 +9,20 @@ nodeApp.use(bodyParser.json({limit:'100mb'}))
 nodeApp.use(bodyParser.urlencoded({limit:'100mb', extended:true}))
 
 const axios = require('axios')
-axios.defaults.headers.common['User-Agent'] = 'Mozilla/5.0'
+const http = require('http')
+const https = require('https')
+
+const axiosInstance = axios.create({
+    headers:{
+        'User-Agent': 'Mozilla/5.0'},
+    timeout : 10000,
+    maxContentLength: 100000000,
+    maxBodyLength: 1000000000,
+
+    httpAgent : new http.Agent({keepAlive:true}),
+    httpsAgent : new https.Agent({keepAlive:true}),
+})
+
 
 const fs = require('fs')
 
@@ -79,7 +92,7 @@ nodeApp.post('/wemep/login', async (req, res) => {
     let date = new Date();
     let millis = date.getMilliseconds();
 
-    let result = await axios.get('https://wpartner.wemakeprice.com/salt.json?_=' + millis)
+    let result = await axiosInstance.get('https://wpartner.wemakeprice.com/salt.json?_=' + millis)
     let salt = String(result.data.data.salt)
 
     let substrSalt = salt[1] + salt[4] + salt[8] + salt[12]
@@ -93,7 +106,7 @@ nodeApp.post('/wemep/login', async (req, res) => {
     params.append('userPassword', passwordHash)
 
     try {
-        let loginReq = await axios.post('https://wpartner.wemakeprice.com/login.json', params) 
+        let loginReq = await axiosInstance.post('https://wpartner.wemakeprice.com/login.json', params) 
         let loginSession = loginReq.headers['set-cookie'].join(';')
         res.end(loginSession)
 
@@ -103,10 +116,10 @@ nodeApp.post('/wemep/login', async (req, res) => {
     }
 })
 
+
 nodeApp.post('/wemep/upload', async(req, res) => {
-
+    
     // 성공/실패 건수 출력 변수
-
     let imageSuccess = 0
     let imageError = 0
 
@@ -119,7 +132,7 @@ nodeApp.post('/wemep/upload', async(req, res) => {
     let id = req.body.id
     let cookie = req.body.cookie
 
-    axios.defaults.headers.Cookie = cookie
+    axiosInstance.defaults.headers.Cookie = cookie
 
     let filesKey = Object.keys(files)
     
@@ -130,15 +143,6 @@ nodeApp.post('/wemep/upload', async(req, res) => {
     imageFormData.append('baseKeyCd', id)
     imageFormData.append('mode', 'upload')
     
-    
-    const excelFormData = new FormData()
-
-    excelFormData.append('imgKey', 'ProductExcelFile')
-    excelFormData.append('mode', 'upload')
-    excelFormData.append('baseKeyCd', id)
-    excelFormData.append('fileName', 'uploadNaverFile')
-
-    const registerFormData = new FormData()
 
     for(let i = 0; i < filesKey.length; i++) {
         if(files[filesKey[i]]['image']) {
@@ -162,7 +166,7 @@ nodeApp.post('/wemep/upload', async(req, res) => {
                 imageFormData.append('fileArr', image)
 
                try {
-                    axios.post('https://wpartner.wemakeprice.com/common/uploadImageAsync.json',
+                    axiosInstance.post('https://wpartner.wemakeprice.com/common/uploadImageAsync.json',
                                     imageFormData,
                                     {
                                         headers : {
@@ -182,7 +186,7 @@ nodeApp.post('/wemep/upload', async(req, res) => {
 
         if(files[filesKey[i]]['excel']) {
             for(let j = 0; j < files[filesKey[i]]['excel'].length; j++) {
-
+                
                 let tempExcelPath = files[filesKey[i]]['excel'][j]
 
                 let fsError = false
@@ -197,11 +201,18 @@ nodeApp.post('/wemep/upload', async(req, res) => {
 
                 if(fsError) { excelError++; continue }
                 
+                const excelFormData = new FormData()
+
+                excelFormData.append('imgKey', 'ProductExcelFile')
+                excelFormData.append('mode', 'upload')
+                excelFormData.append('baseKeyCd', id)
+                excelFormData.append('fileName', 'uploadNaverFile')
                 excelFormData.append('uploadNaverFile', excel)
+                
 
                 try {
                     // create excel url
-                    let uploadExcelReq = await axios.post('https://wpartner.wemakeprice.com/common/uploadFile.json',
+                    let uploadExcelReq = await axiosInstance.post('https://wpartner.wemakeprice.com/common/uploadFile.json',
                                                     excelFormData,
                                                     {
                                                         headers : {
@@ -210,29 +221,30 @@ nodeApp.post('/wemep/upload', async(req, res) => {
                                                     },
                                                 )
                     
+
                     // upload excel url
                     let excelInfo = uploadExcelReq.data
                     let excelNm = excelInfo.uploadNaverFile[0].original_file
                     let excelUrl = excelInfo.uploadNaverFile[0].upload_file.url
 
+                    const registerFormData = new FormData()
                     registerFormData.append('excelNm', excelNm)
                     registerFormData.append('excelUrl', excelUrl)
 
-                    let registExcelReq = await axios.post('https://wpartner.wemakeprice.com/product/excel/naver/addProdExcelFile.json',
+                    let registExcelReq = await axiosInstance.post('https://wpartner.wemakeprice.com/product/excel/naver/addProdExcelFile.json',
                                     registerFormData,
                                     {
                                         headers : {
                                             ...registerFormData.getHeaders()
-                                        }
+                                        },
                                     }
                                 )
 
-                    console.log(registExcelReq.data, 'register')
-                                
                     uploadSuccess(tempExcelPath); excelSuccess++;
 
                 } catch (err) {
-                    console.log(err.response.data.errors)
+                    //let detail = err.response.data.errors[0].detail
+                    //console.log(err)
                     uploadError(tempExcelPath); excelError++;
                 }
             }
@@ -247,12 +259,11 @@ nodeApp.post('/wemep/upload', async(req, res) => {
         excelSuccess : excelSuccess,
         excelError : excelError,
     })
-
 })
 
 nodeApp.post('/11st/login', async (req, res) => {
 
-    axios.defaults.headers.Cookie = ''
+    axiosInstance.defaults.headers.Cookie = ''
 
     let encryptedID = req.body.encryptedID
     let encryptedPW = req.body.encryptedPW
@@ -268,15 +279,15 @@ nodeApp.post('/11st/login', async (req, res) => {
     
 
     try {
-        let loginReq = await axios.post('https://login.11st.co.kr/auth/front/selleroffice/logincheck.tmall', params)
+        let loginReq = await axiosInstance.post('https://login.11st.co.kr/auth/front/selleroffice/logincheck.tmall', params)
         let loginHeader = loginReq.headers['set-cookie']
 
         if(loginHeader.length < 10) return res.end('false')
 
         let loginSession = loginHeader.join(';')
-        axios.defaults.headers.Cookie = loginSession
+        axiosInstance.defaults.headers.Cookie = loginSession
 
-        let result = await axios.get('http://soffice.11st.co.kr/product/ProductRegAjax.tmall?method=getSendCloseTemplateList')
+        let result = await axiosInstance.get('http://soffice.11st.co.kr/product/ProductRegAjax.tmall?method=getSendCloseTemplateList')
         
         let templateCode = result.data.split('')
 
@@ -343,7 +354,7 @@ nodeApp.post('/11st/upload', async (req, res) => {
                 continue;
             }
 
-            axios.defaults.headers.Cookie = cookie
+            axiosInstance.defaults.headers.Cookie = cookie
 
             // zip 파일 경로 찾기
             tempFilePath = tempFilePath.replace('?'+tmpCode, '')
@@ -388,14 +399,12 @@ nodeApp.post('/11st/upload', async (req, res) => {
                 uploadForm.append('imageFile', zip)
                 uploadForm.append('excelFile', excel)
 
-                let result = await axios.post('http://soffice.11st.co.kr/product/BulkProductReg.tmall?method=uploadBulkProduct',
+                let result = await axiosInstance.post('http://soffice.11st.co.kr/product/BulkProductReg.tmall?method=uploadBulkProduct',
                             uploadForm,
                                 {
                                     headers : {
                                         ...uploadForm.getHeaders()
                                     },
-                                    maxContentLength: 100000000,
-                                    maxBodyLength: 1000000000,
                                 },
                             )
 

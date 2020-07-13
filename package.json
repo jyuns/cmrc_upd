@@ -22,6 +22,8 @@
     "express": "^4.17.1",
     "form-data": "^3.0.0",
     "fs": "^0.0.1-security",
+    "http": "0.0.1-security",
+    "https": "^1.0.0",
     "js-sha1": "^0.6.0",
     "vue": "^2.6.11",
     "vue-router": "^3.3.4",

@@ -15,11 +15,13 @@ let yyyy = today.getFullYear();
 
 const currentDate = yyyy + mm + dd
 
+const dir = require('os').homedir()
+
 const options = {
   // log파일
   file: {
     level: 'info',
-    filename:  __dirname + '/' + currentDate + '.log', // 로그파일을 남길 경로
+    filename: dir + '/desktop/cmrcupd_log/' + currentDate + '.log', // 로그파일을 남길 경로
     handleExceptions: true,
     json: false,
     maxsize: 5242880, // 5MB
