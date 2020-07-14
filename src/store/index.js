@@ -17,7 +17,6 @@ export default new Vuex.Store({
 
   mutations: {
     INIT(state) {
-
       let tempWemep = localStorage.getItem('wemepAccount')
       let tempEleven = localStorage.getItem('elevenAccount')
 
@@ -149,6 +148,24 @@ export default new Vuex.Store({
             try {
               
               let result = await axios.post('http://localhost:8083/11st/upload', {id:tempAccount, files:files})
+              let uploadErrorExcel = result.data.uploadErrorExcel
+
+              for(let i = 0; i < uploadErrorExcel.length; i++) {
+                new DOMParser().parseFromString(uploadErrorExcel[i], 'text/html')
+                let titleJsonData =  window['myTitleData']
+                let jsonData =  window['myData']
+
+                let frm = document.getElementById('uploadErrorExcel')
+                document.cookie = state.elevenAccount[0]
+                frm.title.value = titleJsonData
+                frm.data.value = jsonData
+
+                frm.action = 'http://soffice.11st.co.kr/inventory/InventoryAjaxAction.tmall?method=uploadErrorListToExcel'
+                frm.target = '_blank'
+                
+                frm.submit()
+              }
+
               return alert('성공적으로 업로드 되었습니다\n' + '성공 : ' + result.data.success + ' / 실패 : ' + result.data.error)
 
             } catch (err) {

@@ -23,6 +23,12 @@
       </div>
     </div>
   </div>
+<!--
+  <form id='uploadErrorExcel'>
+    <input type='hidden' name='title' value>
+    <input type='hidden' name='data' value>
+  </form>
+-->
 </div>
 </template>
 <script>
@@ -89,9 +95,9 @@ export default {
 
       if(item.isFile) {
         item.file( async (file) => {
-          let tempFilePath = file.path.split('/')
+          let tempFilePath = file.path.split('\\')
           tempFilePath.pop()
-          tempFilePath = tempFilePath.join('/') + '/'
+          tempFilePath = tempFilePath.join('\\') + '\\'
 
           let tempFileType = file.path.split('.').pop()
           tempFileType = tempFileType.toLowerCase()
