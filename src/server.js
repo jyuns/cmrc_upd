@@ -18,8 +18,8 @@ const https = require('https')
 const axiosInstance = axios.create({
     headers:{
         'User-Agent': 'Mozilla/5.0'},
-    maxContentLength: 100000000,
-    maxBodyLength: 1000000000,
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
     httpAgent : new http.Agent({keepAlive:true}),
     httpsAgent : new https.Agent({keepAlive:true}),
 })
@@ -306,7 +306,6 @@ nodeApp.post('/11st/login', async (req, res) => {
 })
 
 const XLSX = require('xlsx')
-const { json } = require('body-parser')
 
 nodeApp.post('/11st/uploadCheck', async (req, res) => {
 
@@ -322,114 +321,66 @@ nodeApp.post('/11st/uploadCheck', async (req, res) => {
 
 nodeApp.post('/11st/upload', async (req, res) => {
 
-    // 성공/실패 건수 출력 변수
-    let success = 0
-    let error = 0
-
-    let id = req.body.id
-    let files = req.body.files
-    let filesKey = Object.keys(files)
-
     startUpload('11번가')
 
-    for(let i = 0; i < filesKey.length; i++) {
-        for(let j = 0; j < files[filesKey[i]].length; j++) {
+    let zipPath = req.body.zipPath
+    let excelPath = req.body.excelPath
+    let cookie = req.body.cookie
 
-            let tempFilePath = files[filesKey[i]][j]
-            let tmpCode = tempFilePath.split('?').pop()
-
-            let cookie = ''
-
-            for(let k = 0; k < id.length; k ++) {
-                if(id[k].tmpCode == tmpCode) {
-                    cookie = await id[k].cookie
-                    break
-                }
-            }
-            
-            // 먼저 로그인 검사 이후 값 넘기는 메소드 짜기
-            if(cookie.length == 0) {
-                noLoginError(files[filesKey[i]][j])
-                continue;
-            }
-
-            axiosInstance.defaults.headers.Cookie = cookie
-
-            // zip 파일 경로 찾기
-            tempFilePath = tempFilePath.replace('?'+tmpCode, '')
-            
-            let tempMethodVal = tempFilePath.split('.')
-            tempMethodVal.pop()
-
-            let tempFilePathNumber = tempMethodVal.join('')
-            tempFilePathNumber = tempFilePathNumber.split('-').pop()
-
-            let tempZipFile = ['1-500', '501-1000', '1001-1500', '1501-2000', '2001-2500', '2501-3000']
-
-            let tempZipFileName = tempZipFile[Math.ceil((Number(tempFilePathNumber)/500) - 1)] + '.zip'
-            
-            let tempZipFilePath =  tempFilePath.split('\\')
-
-            tempZipFilePath.pop()
-            
-            try {
-            // upload method 진행하기
-
-                let fsError = false
-
-                const zip = fs.createReadStream(tempZipFilePath.join('\\') + '\\' + tempZipFileName)
-                const excel = fs.createReadStream(tempFilePath)
-
-                zip.on('error', () => {
-                    noSuchFileError(tempZipFilePath.join('\\') + '\\' + tempZipFileName)
-                    fsError = true
-                    return fsError
-                })
-
-                excel.on('error', () => {
-                    noSuchFileError(tempFilePath)
-                    fsError = true
-                    return fsError
-                })
-
-                if(fsError) { error++; continue }
-
-                const uploadForm = new FormData()
-                
-                uploadForm.append('imageFile', zip)
-                uploadForm.append('excelFile', excel)
-                
-                let result = await axiosInstance.post('http://soffice.11st.co.kr/product/BulkProductReg.tmall?method=uploadBulkProduct',
-                            uploadForm,
-                                {
-                                    headers : {
-                                        'Content-Type' : uploadForm.getHeaders()['content-type'] + '; charset=euc-kr'
-                                    },
-                                    responseType: 'arraybuffer',
-                                    responseEncoding: 'binary'
-                                },
-                            )
-
-/**                
- * let utf8Text = iconv.decode(result.data, 'euc-kr')
- * let dom = new jsdom.JSDOM(utf8Text)
- * dom.window['myData'] */
-
-                uploadSuccess(tempFilePath); success++
-                        
-            } catch(err) {
-                console.log(err)
-                uploadError(tempFilePath); error++
-            }    
-        }
+    // 먼저 로그인 검사 이후 값 넘기는 메소드 짜기
+    if(cookie.length == 0) {
+        noLoginError(excelPath)
+        endUpload('11번가')
+        return res.send(false)
     }
 
-    endUpload('11번가')
+    axiosInstance.defaults.headers.Cookie = cookie
 
-    res.json({
-        success : success,
-        error : error,
-    })
+    try {
+        // upload method 진행하기
+           let fsError = false
+
+           const zip = fs.createReadStream(zipPath)
+           const excel = fs.createReadStream(excelPath)
+
+           zip.on('error', () => {
+               noSuchFileError(zipPath)
+               fsError = true
+               return fsError
+           })
+
+           excel.on('error', () => {
+               noSuchFileError(excelPath)
+               fsError = true
+               return fsError
+           })
+
+           if(fsError) {endUpload('11번가'); return res.send(false)}
+
+           const uploadForm = new FormData()
+           
+           uploadForm.append('imageFile', zip)
+           uploadForm.append('excelFile', excel)
+           
+            let result = await axiosInstance.post('http://soffice.11st.co.kr/product/BulkProductReg.tmall?method=uploadBulkProduct',
+                uploadForm,
+                    {
+                        headers : {
+                            ...uploadForm.getHeaders()
+                        },
+                    },
+            )
+           uploadSuccess(excelPath)
+           endUpload('11번가')
+           return res.send(true)
+                   
+       } catch(err) {
+           console.log(err)
+           uploadError(excelPath)
+           endUpload('11번가')
+           return res.send(false)
+
+       }    
 })
 
 nodeApp.listen(8083, () => {

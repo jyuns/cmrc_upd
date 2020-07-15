@@ -56,12 +56,17 @@ export default {
       console.log(this.files)
     },
 
-    upload() {
-        this.UPLOAD({
+    async upload() {
+      console.log('업로드 요청 시작')
+        this.disabledUploadBtn = true
+        
+        let result = await this.UPLOAD({
           id : this.wemepAccountID,
           files : this.files,
           type : 'wemep',
         })
+
+        if(!result) {this.disabledUploadBtn = false}
     },
 
     reset() {

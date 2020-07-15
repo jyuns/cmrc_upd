@@ -13,7 +13,6 @@
         <v-text-field
         v-model='tempLoginID'
         label="아이디"
-        name="login"
         prepend-icon="mdi-account"
         type="text"
         :disabled="isDisable"
@@ -24,7 +23,6 @@
         v-model='tempLoginPW'
         id="password"
         label="비밀번호"
-        name="password"
         prepend-icon="mdi-lock"
         type="password"
         :disabled="isDisable"

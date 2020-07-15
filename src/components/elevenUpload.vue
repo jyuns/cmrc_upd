@@ -1,5 +1,8 @@
 <template>
 <div @click='test()'>
+  
+      <v-alert dense text type="success" style="margin: 12px;" v-if='loadingPie>0'> {{loading}}/{{loadingPie}} </v-alert>    
+
   <div class='drop-wrapper' @dragover.prevent @drop.stop.prevent="dropFile">
     <div class='drop-zone' v-if='!Object.keys(files).length'>
       <img :src='require("../assets/upload.svg")' style='width:42px; margin-bottom:8px;' />
@@ -33,7 +36,7 @@
 </template>
 <script>
 
-import { mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name : 'elevenUpload',
@@ -53,6 +56,12 @@ export default {
     }, 1500)
   },
 
+  computed : {
+    ...mapState([
+      'loading','loadingPie'
+    ])
+  },
+
   methods : {
     ...mapActions([
       'UPLOAD', 'CHECK_TMP_CODE'
@@ -62,21 +71,26 @@ export default {
       console.log(this.files)
     },
 
-    upload() {
-        this.UPLOAD({
+    async upload() {
+        console.log('업로드 요청 시작')
+        this.disabledUploadBtn = true
+
+        let result = await this.UPLOAD({
           files : this.files,
           type : 'eleven',
         })
+
+        if(!result) {this.disabledUploadBtn = false}
     },
 
     reset() {
       this.files = {}
     },
       
-    dropFile(e) {
+    async dropFile(e) {
       e.preventDefault()
       e.stopPropagation()
-      
+
       let items = e.dataTransfer.items;
       
       for (let i=0; i<items.length; i++) {
@@ -84,7 +98,7 @@ export default {
           let item = items[i].webkitGetAsEntry();
           
           if (item) {
-            this.readFolder(item);
+            await this.readFolder(item);
           }
       }
     },
@@ -105,7 +119,7 @@ export default {
           if(tempFileType == 'xls') {
             if(!self.files[tempFilePath]) self.files[tempFilePath] = []
             let modifiedFilePath = await this.CHECK_TMP_CODE({path : file.path})
-            if(self.files[tempFilePath].indexOf(file.path) == -1) return self.files[tempFilePath].push(modifiedFilePath)
+            if(self.files[tempFilePath].indexOf(file.path) == -1) return await self.files[tempFilePath].push(modifiedFilePath)
           }
         }) 
       }

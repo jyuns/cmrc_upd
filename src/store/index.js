@@ -13,10 +13,16 @@ export default new Vuex.Store({
   state: {
     wemepAccount : [''],
     elevenAccount : [''],
+    loading : 0,
+    loadingPie : 0,
   },
 
   mutations: {
     INIT(state) {
+
+      state.loading = 0;
+      state.loadingPie = 0;
+
       let tempWemep = localStorage.getItem('wemepAccount')
       let tempEleven = localStorage.getItem('elevenAccount')
 
@@ -34,6 +40,20 @@ export default new Vuex.Store({
       state.wemepAccount = tempWemepJSON
       state.elevenAccount = tempElevenJSON
     },
+
+    LOADING(state) {
+      state.loading++;
+    },
+
+    SET_LOADING(state, payload) {
+      state.loadingPie = payload
+    },
+
+    INIT_LODING(state) {
+      state.loading = 0;
+      state.loadingPie = 0;
+    }
+
   },
   actions: {
     ADD({state}, payload) {
@@ -112,7 +132,7 @@ export default new Vuex.Store({
       }
     },
     
-    async UPLOAD({state}, payload) {
+    async UPLOAD({state, commit}, payload) {
 
       let files = payload.files
       let type = payload.type
@@ -144,13 +164,79 @@ export default new Vuex.Store({
         }} else if (type == 'eleven') {
             
             let tempAccount = state.elevenAccount
-            
-            try {
-              
-              let result = await axios.post('http://localhost:8083/11st/upload', {id:tempAccount, files:files})
-              let uploadErrorExcel = result.data.uploadErrorExcel
+            let filesKey = Object.keys(files)
 
-              for(let i = 0; i < uploadErrorExcel.length; i++) {
+            let loadingPie = 0
+
+            for(let i = 0; i < filesKey.length; i++) {
+              for(let j = 0; j < files[filesKey[i]].length; j++) {
+                await loadingPie++;
+              }
+            }
+            console.log(loadingPie)
+            commit('SET_LOADING', loadingPie)
+
+            let success = 0;
+            let failed = 0;
+
+            for(let i = 0; i < filesKey.length; i++) {
+              for(let j = 0; j < files[filesKey[i]].length; j++) {
+                let tempFilePath = files[filesKey[i]][j]
+                let tmpCode = tempFilePath.split('?').pop()
+
+                let cookie = ''
+
+                for(let k = 0; k < tempAccount.length; k++) {
+                  if(tempAccount[k].tmpCode == tmpCode) {
+                    cookie = await tempAccount[k].cookie
+                    break
+                  }
+                }
+
+                tempFilePath = tempFilePath.replace('?'+tmpCode, '')
+
+                let tempMethodVal = tempFilePath.split('.')
+                tempMethodVal.pop()
+
+                let tempFilePathNumber = tempMethodVal.join('')
+                tempFilePathNumber = tempFilePathNumber.split('-').pop()
+
+                let tempZipFile = ['1-500', '501-1000', '1001-1500', '1501-2000', '2001-2500', '2501-3000']
+
+                let tempZipFileName = tempZipFile[Math.ceil((Number(tempFilePathNumber)/500) - 1)] + '.zip'
+                
+                let tempZipFilePath =  tempFilePath.split('\\')
+    
+                tempZipFilePath.pop()
+
+                try {
+                  let zipPath = tempZipFilePath.join('\\') + '\\' + tempZipFileName
+                  let excelPath = tempFilePath
+
+                  let result = await axios.post('http://localhost:8083/11st/upload', {zipPath : zipPath, excelPath : excelPath, cookie : cookie})
+                  console.log(result.data)
+                  if(result.data) success ++
+                  else if(!result.data) failed ++
+
+                } catch (err) {
+                  console.log(err)
+                  alert(err)
+                }
+
+                commit('LOADING')
+
+              }
+            }
+
+            setTimeout( () => {
+              commit('INIT_LODING')
+            }, 3000)
+
+            return alert('성공 : ' + success + ' / 실패 : ' + failed)
+/**
+ *
+ *             try {           
+ *                for(let i = 0; i < uploadErrorExcel.length; i++) {
                 new DOMParser().parseFromString(uploadErrorExcel[i], 'text/html')
                 let titleJsonData =  window['myTitleData']
                 let jsonData =  window['myData']
@@ -169,10 +255,9 @@ export default new Vuex.Store({
               return alert('성공적으로 업로드 되었습니다\n' + '성공 : ' + result.data.success + ' / 실패 : ' + result.data.error)
 
             } catch (err) {
-              
               return alert(err)
-
             }
+              */
 
         }
       },
