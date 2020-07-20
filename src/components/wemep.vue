@@ -2,7 +2,7 @@
 <div class='home-container'>
   <div>
     <div class='login-container'>
-      <login-form v-for='(value, index) in wemepAccount' :accountNumber='index' :accountType='"wemep"' :key='index+"wemep"'
+      <login-form style='width:1000px' v-for='(value, index) in wemepAccount' :accountNumber='index' :accountType='"wemep"' :key='index+"wemep"'
        :accountID='value.id' :accountPW='value.pw'/>
 
       <div class='add-account-btn'>

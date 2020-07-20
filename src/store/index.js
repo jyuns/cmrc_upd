@@ -150,13 +150,41 @@ export default new Vuex.Store({
         if(cookie.length == 0) return alert('로그인을 다시 진행해 주세요')
   
         try {
-          
-          let result = await axios.post('http://localhost:8083/wemep/upload', {id:id, cookie:cookie, files:files})
+          let imageSuc = 0
+          let excelSuc = 0
 
-          return alert('성공적으로 업로드 되었습니다\n'
-           + '이미지 성공 : ' + result.data.imageSuccess + ' / 이미지 실패 : ' + result.data.imageError
-           + '\n 엑셀 성공 : ' + result.data.excelSuccess + ' / 엑셀 실패 : ' + result.data.excelError)
+          let filesKey = Object.keys(files)
           
+          for(let i = 0; i < filesKey.length; i++) {
+            if(files[filesKey[i]]['image']) {
+              for(let j = 0; j < files[filesKey[i]]['image'].length; j++) {
+                let tempImagePath = files[filesKey[i]]['image'][j]
+
+                let imageRes = await axios.post('http://localhost:8083/wemep/upload/image', {
+                  id : id,
+                  cookie : cookie,
+                  files : tempImagePath,
+                })
+
+                if(imageRes.data == '성공') imageSuc++;
+              }}
+
+            if(files[filesKey[i]]['excel']) {
+              for(let k = 0; k < files[filesKey[i]]['image'].length; k++) {
+                let tempExcelPath = files[filesKey[i]]['excel'][k]
+
+                let excelRes = await axios.post('http://localhost:8083/wemep/upload/image', {
+                  id : id,
+                  cookie : cookie,
+                  files : tempExcelPath,
+                })
+
+                if(excelRes.data == '성공') excelSuc++;
+            }
+          }}
+
+          return alert('이미지 성공' + imageSuc + '개\n' + '엑셀 성공' + excelSuc + '개')
+
         } catch (err) {
           
           return alert(err)
