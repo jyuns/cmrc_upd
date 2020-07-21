@@ -166,20 +166,20 @@ export default new Vuex.Store({
                   files : tempImagePath,
                 })
 
-                if(imageRes.data == '성공') imageSuc++;
+                if(imageRes.data == true) imageSuc++;
               }}
 
             if(files[filesKey[i]]['excel']) {
               for(let k = 0; k < files[filesKey[i]]['image'].length; k++) {
                 let tempExcelPath = files[filesKey[i]]['excel'][k]
 
-                let excelRes = await axios.post('http://localhost:8083/wemep/upload/image', {
+                let excelRes = await axios.post('http://localhost:8083/wemep/upload/excel', {
                   id : id,
                   cookie : cookie,
                   files : tempExcelPath,
                 })
 
-                if(excelRes.data == '성공') excelSuc++;
+                if(excelRes.data == true) excelSuc++;
             }
           }}
 

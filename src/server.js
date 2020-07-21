@@ -157,9 +157,9 @@ nodeApp.post('/wemep/upload/image', async(req,res) => {
         uploadSuccess(file);
         endUpload('위메프');
         res.send(true);       
-        endUpload('위메프')
     } catch(err) {
         uploadError(file);
+    
         endUpload('위메프');
         res.send(false);
     }
@@ -230,8 +230,6 @@ nodeApp.post('/wemep/upload/excel', async(req,res) => {
         endUpload('위메프');
         return res.send(false);
     }
-
-
 })
 
 nodeApp.post('/11st/login', async (req, res) => {
