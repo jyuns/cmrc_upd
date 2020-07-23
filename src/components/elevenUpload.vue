@@ -109,9 +109,9 @@ export default {
 
       if(item.isFile) {
         item.file( async (file) => {
-          let tempFilePath = file.path.split('\\')
+          let tempFilePath = file.path.split('/')
           tempFilePath.pop()
-          tempFilePath = tempFilePath.join('\\') + '\\'
+          tempFilePath = tempFilePath.join('/') + '/'
 
           let tempFileType = file.path.split('.').pop()
           tempFileType = tempFileType.toLowerCase()

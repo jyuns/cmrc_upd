@@ -170,7 +170,7 @@ export default new Vuex.Store({
               }}
 
             if(files[filesKey[i]]['excel']) {
-              for(let k = 0; k < files[filesKey[i]]['image'].length; k++) {
+              for(let k = 0; k < files[filesKey[i]]['excel'].length; k++) {
                 let tempExcelPath = files[filesKey[i]]['excel'][k]
 
                 let excelRes = await axios.post('http://localhost:8083/wemep/upload/excel', {
@@ -233,12 +233,12 @@ export default new Vuex.Store({
 
                 let tempZipFileName = tempZipFile[Math.ceil((Number(tempFilePathNumber)/500) - 1)] + '.zip'
                 
-                let tempZipFilePath =  tempFilePath.split('\\')
+                let tempZipFilePath =  tempFilePath.split('/')
     
                 tempZipFilePath.pop()
 
                 try {
-                  let zipPath = tempZipFilePath.join('\\') + '\\' + tempZipFileName
+                  let zipPath = tempZipFilePath.join('/') + '/' + tempZipFileName
                   let excelPath = tempFilePath
 
                   let result = await axios.post('http://localhost:8083/11st/upload', {zipPath : zipPath, excelPath : excelPath, cookie : cookie})
