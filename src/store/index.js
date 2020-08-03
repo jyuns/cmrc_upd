@@ -7,7 +7,7 @@ Vue.use(Vuex)
 
 // 11번가 로그인 암호화
 const JSEncrypt = require('../encrypt')
-JSEncrypt.default.prototype.setPublic('a650c97fe917f8cc0312541fd682ca221bc19d3e345cd07c241c266aca5d117d14d3f7f322de2282ef67c0aeb7a6eaae3bdff24c3ff661700a7906503cb8b8823c42a07fa5eb46aca7edfe52cabe1f2aa393f55cf52fd5be4316bb6aab39d1d51abfd7bd3d28700e7c1ff8bbeb549632b0b76b5be86a23b39fc8d3e703889189', '10001')
+JSEncrypt.default.prototype.setPublic('b5ca571b5dd8cf0a8709d7432d15b1e4517c43da52bab454300979453fb519b5235c999e9000829a8b5b321405208792109713cbb1430fc149ea054ddbcce96741408fb921ea21a027f4aabf8b22d438a15834b6cf73e1fc67f3bc54104e7ba262dcd9d759452c26ab8ae6113cb161d0087889b3283c2817058ad565de1ab785', '10001')
 
 export default new Vuex.Store({
   state: {
@@ -233,12 +233,12 @@ export default new Vuex.Store({
 
                 let tempZipFileName = tempZipFile[Math.ceil((Number(tempFilePathNumber)/500) - 1)] + '.zip'
                 
-                let tempZipFilePath =  tempFilePath.split('/')
+                let tempZipFilePath =  tempFilePath.split('\\')
     
                 tempZipFilePath.pop()
 
                 try {
-                  let zipPath = tempZipFilePath.join('/') + '/' + tempZipFileName
+                  let zipPath = tempZipFilePath.join('\\') + '\\' + tempZipFileName
                   let excelPath = tempFilePath
 
                   let result = await axios.post('http://localhost:8083/11st/upload', {zipPath : zipPath, excelPath : excelPath, cookie : cookie})

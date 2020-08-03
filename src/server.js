@@ -243,7 +243,7 @@ nodeApp.post('/11st/login', async (req, res) => {
     
     params.append('encryptedLoginName', encryptedID)
     params.append('encryptedPassWord', encryptedPW)
-    params.append('priority', 92)
+    params.append('priority', 94)
     params.append('authMethod', 'login')
     params.append('returnURL', 'http://soffice.11st.co.kr')
     params.append('autoId', 'Y')
