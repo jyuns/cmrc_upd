@@ -7,7 +7,6 @@ Vue.use(Vuex)
 
 // 11번가 로그인 암호화
 const JSEncrypt = require('../encrypt')
-JSEncrypt.default.prototype.setPublic('b5ca571b5dd8cf0a8709d7432d15b1e4517c43da52bab454300979453fb519b5235c999e9000829a8b5b321405208792109713cbb1430fc149ea054ddbcce96741408fb921ea21a027f4aabf8b22d438a15834b6cf73e1fc67f3bc54104e7ba262dcd9d759452c26ab8ae6113cb161d0087889b3283c2817058ad565de1ab785', '10001')
 
 export default new Vuex.Store({
   state: {
@@ -105,11 +104,16 @@ export default new Vuex.Store({
         if(result.data != false) { alert("로그인 성공하였습니다"); return false }
         
       } else if(payload.type == 'eleven') {
-        let encryptedID = JSEncrypt.default.prototype.encrypt(id)
-        let encryptedPW = JSEncrypt.default.prototype.encrypt(pw)
 
-        let result = await axios.post('http://localhost:8083/11st/login', {encryptedID : encryptedID, encryptedPW : encryptedPW})
-        
+        let key = await axios.get('http://localhost:8083/11st/key')
+        let priority = key.data.pro
+        await JSEncrypt.default.prototype.setPublic(key.data.key, '10001')
+
+        let encryptedID = await JSEncrypt.default.prototype.encrypt(id)
+        let encryptedPW = await JSEncrypt.default.prototype.encrypt(pw)
+
+        let result = await axios.post('http://localhost:8083/11st/login', {encryptedID : encryptedID, encryptedPW : encryptedPW, priority : priority})
+        console.log(result)        
         if(result.data == false) return alert("ID/PW가 틀렸습니다");
 
         state.elevenAccount[num] = { id : id, pw : pw, cookie : result.data.cookie, tmpCode : result.data.tmpCode}

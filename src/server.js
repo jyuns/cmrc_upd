@@ -238,12 +238,13 @@ nodeApp.post('/11st/login', async (req, res) => {
 
     let encryptedID = req.body.encryptedID
     let encryptedPW = req.body.encryptedPW
+    let priority = req.body.priority
 
     const params = new URLSearchParams()
     
     params.append('encryptedLoginName', encryptedID)
     params.append('encryptedPassWord', encryptedPW)
-    params.append('priority', 94)
+    params.append('priority', priority)
     params.append('authMethod', 'login')
     params.append('returnURL', 'http://soffice.11st.co.kr')
     params.append('autoId', 'Y')
@@ -277,6 +278,19 @@ nodeApp.post('/11st/login', async (req, res) => {
 })
 
 const XLSX = require('xlsx')
+
+nodeApp.get('/11st/key', async (req, res) => {
+
+    let getKey = await axios.get('https://www.11st.co.kr/js/common/rsa.js')
+    console.log('getKey :' + getKey)
+    let key = await getKey.data.split("getKeys('")[1].split(",")[1].split("'")[1]
+    let pro = await getKey.data.split("getKeys('")[1].split(",")[2].split("'")[1]
+    console.log('key :' + key)
+    res.json({
+        key : key,
+        pro : pro
+    })
+})
 
 nodeApp.post('/11st/uploadCheck', async (req, res) => {
 
